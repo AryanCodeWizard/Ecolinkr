@@ -1,10 +1,19 @@
 import express from "express";
 import dotenv from "dotenv";
-const app = express();  
+
+const app = express();
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3000);
+
+app.get("/health", (_req, res) => {
+  res.json({
+    service: "auth",
+    status: "running",
+    port: PORT,
+  });
+});
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Auth service is running on port ${PORT}`);
 });
