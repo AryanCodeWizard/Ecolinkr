@@ -1,0 +1,12 @@
+node_modules
+dist
+tests
+vitest.config.ts
+coverage
+.env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
+*.log
+.DS_Store

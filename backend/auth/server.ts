@@ -1,19 +1,28 @@
-import express from "express";
-import dotenv from "dotenv";
+import { env } from "./config/env.js";
+import { connectDb, disconnectDb } from "./config/db.js";
+import { connectRedis, disconnectRedis } from "./config/redis.js";
+import { app } from "./app.js";
 
-const app = express();
-dotenv.config();
+await connectDb();
+await connectRedis();
 
-const PORT = Number(process.env.PORT || 3000);
+const server = app.listen(env.PORT, () => {
+  console.log(`Auth service is running on port ${env.PORT}`);
+});
 
-app.get("/health", (_req, res) => {
-  res.json({
-    service: "auth",
-    status: "running",
-    port: PORT,
+server.on("error", (err) => {
+  console.error("Server failed to start:", err);
+  process.exit(1);
+});
+
+function shutdown(signal: string) {
+  console.log(`${signal} received, shutting down`);
+  server.close(async () => {
+    await disconnectDb();
+    await disconnectRedis();
+    process.exit(0);
   });
-});
-
-app.listen(PORT, () => {
-  console.log(`Auth service is running on port ${PORT}`);
-});
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
